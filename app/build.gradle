@@ -26,4 +26,7 @@ dependencies {
 
     // Dependency for Google Sign-In
     compile 'com.google.android.gms:play-services-auth:11.6.0'
+    compile 'com.google.api-client:google-api-client:1.22.0'
+    compile 'com.google.api-client:google-api-client-android:1.22.0'
+    compile 'com.google.apis:google-api-services-people:v1-rev139-1.22.0'
 }
