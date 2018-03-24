@@ -6,4 +6,19 @@
     android:layout_height="match_parent"
     tools:context="org.edu.electricwife.app.SpeechToTextActivity">
 
+    <Button
+        android:id="@+id/btnSpeak"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Speak"
+        tools:layout_editor_absoluteX="148dp"
+        tools:layout_editor_absoluteY="446dp" />
+
+    <TextView
+        android:id="@+id/txtSpeechInput"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=" "
+        tools:layout_editor_absoluteX="163dp"
+        tools:layout_editor_absoluteY="121dp" />
 </android.support.constraint.ConstraintLayout>
