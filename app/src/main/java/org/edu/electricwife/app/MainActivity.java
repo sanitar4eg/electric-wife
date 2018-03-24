@@ -47,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String CONTACTS_SCOPE = "https://www.googleapis.com/auth/contacts.readonly";
     private static final HttpTransport HTTP_TRANSPORT = AndroidHttp.newCompatibleTransport();
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+    public static List<Message> messages = new ArrayList<>();
+    public static List<Message> news = new ArrayList<>();
 
     private static String lastCheckId = null;
 
@@ -240,6 +242,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                     }
                 }
+                MainActivity.news = news;
+                MainActivity.messages = messages;
                 Log.i(TAG, "You have " + news.size() + "messages");
             }
         }
