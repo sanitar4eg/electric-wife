@@ -14,8 +14,13 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.api.client.util.Base64;
+import com.google.api.client.util.StringUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -48,7 +53,14 @@ public class SpeechToTextActivity extends Activity {
                     if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                         Log.e("TTS", "This Language is not supported");
                     }
-                    speak("Hello", true);
+                    int size = MainActivity.news.size();
+                    if (0 == size) {
+                        speak("Hello, you have no new messages", true);
+                    } else if (size == 1) {
+                        speak("Hello, you have " + size + "new message", true);
+                    } else {
+                        speak("Hello, you have " + size + "new messages", true);
+                    }
                 } else {
                     Log.e("TTS", "Initilization Failed!");
                 }
@@ -78,6 +90,7 @@ public class SpeechToTextActivity extends Activity {
 
     private void speak(String text, Boolean needAnswer) {
         if (text != null) {
+            Log.i(MainActivity.TAG, text);
             HashMap<String, String> hashTts = new HashMap<>();
             hashTts.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, needAnswer ? "needAnswer" : "id");
 
@@ -104,6 +117,7 @@ public class SpeechToTextActivity extends Activity {
     };
 
     private void handleSpeech(String text, Boolean beforeAnswer) {
+
         if (containsAtLeastOne(text, new String[]{
                 "thanks", "thank you"
         })) {
@@ -118,6 +132,17 @@ public class SpeechToTextActivity extends Activity {
                     "Goodbye", "Bye"
             });
             speak(answer, false);
+            return;
+        }
+
+        if (containsAtLeastOne(text, new String[]{
+                "read one", "read one please"
+        })) {
+            String snippet = MainActivity.messages.get(0).getSnippet();
+            int i = snippet.indexOf("2018");
+            String data = snippet.substring(0, i);
+            Log.i(MainActivity.TAG, data);
+            speak(data, true);
             return;
         }
 

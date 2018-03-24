@@ -43,7 +43,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.OnConnectionFailedListener {
 
     private static final int RC_AUTH_CODE = 111;
-    private static final String TAG = "GoogleOAuthClient";
+    public static final String TAG = "GoogleOAuthClient";
     private static final String CONTACTS_SCOPE = "https://www.googleapis.com/auth/contacts.readonly";
     private static final HttpTransport HTTP_TRANSPORT = AndroidHttp.newCompatibleTransport();
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
@@ -212,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     .messages().list(user).execute();
             List<Message> prettyMessages = new ArrayList<>();
             for (Message message : list.getMessages().subList(0, 5)) {
-                Message get = mService.users().messages().get(user, message.getId()).execute();
+                Message get = mService.users().messages().get(user, message.getId()).setFormat("full").execute();
                 prettyMessages.add(get);
             }
             return prettyMessages;
@@ -243,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }
                 MainActivity.news = news;
-                MainActivity.messages = messages;
+                MainActivity.messages = output;
                 Log.i(TAG, "You have " + news.size() + "messages");
             }
         }
