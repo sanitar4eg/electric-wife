@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "588694195685",
+    "firebase_url": "https://electric-foxy-wife.firebaseio.com",
+    "project_id": "electric-foxy-wife",
+    "storage_bucket": "electric-foxy-wife.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:588694195685:android:780844557ed3c7b9",
+        "android_client_info": {
+          "package_name": "org.edu.electricwife.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "588694195685-rtk64u4mp9sk3bj5hj4v68kq11d5v3u3.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "588694195685-e59tbdurki1u0i18qpfj8scmh9h92bn8.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "588694195685-8lkbm13bh8vpgp9fkjancqsv0steluph.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "588694195685-qvad8dha7sh08bdr6miaqsrrnbghss9r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.electricwife",
+            "certificate_hash": "5689d028cba1f6c4363f378c568e175d86d97403"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjNV0s-ma1JoCoclLW5TtIZ6Hbok2Anjs"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "588694195685-rtk64u4mp9sk3bj5hj4v68kq11d5v3u3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
