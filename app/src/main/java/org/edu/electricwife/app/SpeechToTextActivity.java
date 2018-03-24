@@ -3,25 +3,27 @@ package org.edu.electricwife.app;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.security.KeyPairGenerator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Random;
+
 
 public class SpeechToTextActivity extends Activity {
     private TextView txtSpeechInput;
-    private Button btnSpeak;
     private TextToSpeech tts;
     private final int REQ_CODE_SPEECH_INPUT = 100;
 
@@ -30,7 +32,7 @@ public class SpeechToTextActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_speech_to_text);
         txtSpeechInput = findViewById(R.id.txtSpeechInput);
-        btnSpeak = findViewById(R.id.btnSpeak);
+        Button btnSpeak = findViewById(R.id.btnSpeak);
         btnSpeak.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -42,11 +44,11 @@ public class SpeechToTextActivity extends Activity {
             public void onInit(int status) {
                 if (status == TextToSpeech.SUCCESS) {
                     int result = tts.setLanguage(Locale.US);
+                    tts.setOnUtteranceProgressListener(mProgressListener);
                     if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                         Log.e("TTS", "This Language is not supported");
                     }
-                    speak("Hello");
-
+                    speak("Hello", true);
                 } else {
                     Log.e("TTS", "Initilization Failed!");
                 }
@@ -62,6 +64,7 @@ public class SpeechToTextActivity extends Activity {
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+//        intent.putExtra(RecognizerIntent.EXTRA_WEB_SEARCH_ONLY, true);
         intent.putExtra(RecognizerIntent.EXTRA_PROMPT,
                 "Say something");
         try {
@@ -73,15 +76,15 @@ public class SpeechToTextActivity extends Activity {
         }
     }
 
-    private void speak(String text) {
+    private void speak(String text, Boolean needAnswer) {
         if (text != null) {
             HashMap<String, String> hashTts = new HashMap<>();
-            hashTts.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "id");
+            hashTts.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, needAnswer ? "needAnswer" : "id");
 
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, hashTts);
-            tts.setOnUtteranceProgressListener(mProgressListener);
         }
     }
+
     private UtteranceProgressListener mProgressListener = new UtteranceProgressListener() {
         @Override
         public void onStart(String utteranceId) {
@@ -93,10 +96,62 @@ public class SpeechToTextActivity extends Activity {
 
         @Override
         public void onDone(String utteranceId) {
-            promptSpeechInput();
+            // end of synthesizing
+            if (utteranceId.equals("needAnswer")) {
+                handleSpeech(((String) txtSpeechInput.getText()).toLowerCase(), false);
+            }
         }
     };
 
+    private void handleSpeech(String text, Boolean beforeAnswer) {
+        if (containsAtLeastOne(text, new String[]{
+                "thanks", "thank you"
+        })) {
+            speak("You are welcome", false);
+            return;
+        }
+
+        if (containsAtLeastOne(text, new String[]{
+                "bye", "stop"
+        })) {
+            String answer = getRandomItem(new String[]{
+                    "Goodbye", "Bye"
+            });
+            speak(answer, false);
+            return;
+        }
+
+        if (beforeAnswer) {
+            speak(text, true);
+        } else {
+            promptSpeechInput();
+        }
+    }
+
+    @Nullable
+    private String getRandomItem(String[] arr) {
+        HashSet<String> myHashSet = new HashSet<>(Arrays.asList(arr));
+        int size = myHashSet.size();
+        int item = new Random().nextInt(size); // In real life, the Random object should be rather more shared than this
+        int i = 0;
+        for (String obj : myHashSet) {
+            if (i == item)
+                return obj;
+            i++;
+        }
+        return null;
+    }
+
+    public boolean containsAtLeastOne(String text, String[] arr) {
+        HashSet<String> set = new HashSet<>(Arrays.asList(arr));
+
+        for (String aSet : set) {
+            if (text.contains(aSet)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Receiving speech input
@@ -111,8 +166,10 @@ public class SpeechToTextActivity extends Activity {
 
                     ArrayList<String> result = data
                             .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                    this.txtSpeechInput.setText(result.get(0));
-                    speak((String) txtSpeechInput.getText());
+
+                    String userSpeech = result.get(0);
+                    this.txtSpeechInput.setText(userSpeech);
+                    handleSpeech(userSpeech.toLowerCase(), true);
                 }
                 break;
             }
