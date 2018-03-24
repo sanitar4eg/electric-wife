@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
@@ -25,11 +26,18 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccoun
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.services.gmail.GmailScopes;
+import com.google.api.services.gmail.model.Label;
+import com.google.api.services.gmail.model.ListLabelsResponse;
 import com.google.api.services.people.v1.PeopleService;
 import com.google.api.services.people.v1.model.ListConnectionsResponse;
 import com.google.api.services.people.v1.model.Person;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -43,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /* Client for accessing Google APIs */
     private static GoogleApiClient mGoogleApiClient;
+    GoogleAccountCredential mCredential;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +62,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .requestServerAuthCode(getString(R.string.server_client_id))
                 .requestEmail()
                 .requestScopes(
-                        new Scope("https://www.googleapis.com/auth/youtube.readonly"),
-                        new Scope(CONTACTS_SCOPE)
+                        new Scope(CONTACTS_SCOPE),
+                        new Scope(GmailScopes.MAIL_GOOGLE_COM)
                 )
                 .build();
 
@@ -123,9 +132,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void updateUI(@Nullable GoogleSignInAccount account) {
         if (account != null) {
-            new GetContactsTask(this).execute(account.getAccount());
-        } else {
+//            new GetContactsTask(this).execute(account.getAccount());
 
+            mCredential = GoogleAccountCredential.usingOAuth2(
+                    getApplicationContext(), Collections.singletonList(GmailScopes.MAIL_GOOGLE_COM))
+                    .setBackOff(new ExponentialBackOff());
+            mCredential.setSelectedAccount(account.getAccount());
+            new MakeRequestTask(mCredential).execute();
         }
     }
 
@@ -154,6 +167,79 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.i(TAG, msg.toString());
     }
 
+    private class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
+        private com.google.api.services.gmail.Gmail mService = null;
+        private Exception mLastError = null;
+
+        MakeRequestTask(GoogleAccountCredential credential) {
+            HttpTransport transport = AndroidHttp.newCompatibleTransport();
+            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+            mService = new com.google.api.services.gmail.Gmail.Builder(
+                    transport, jsonFactory, credential)
+                    .setApplicationName("Gmail API Android Quickstart")
+                    .build();
+        }
+
+        /**
+         * Background task to call Gmail API.
+         *
+         * @param params no parameters needed for this task.
+         */
+        @Override
+        protected List<String> doInBackground(Void... params) {
+            try {
+                return getDataFromApi();
+            } catch (Exception e) {
+                mLastError = e;
+                cancel(true);
+                return null;
+            }
+        }
+
+        /**
+         * Fetch a list of Gmail labels attached to the specified account.
+         *
+         * @return List of Strings labels.
+         * @throws IOException
+         */
+        private List<String> getDataFromApi() throws IOException {
+            // Get the labels in the user's account.
+            String user = "me";
+            List<String> labels = new ArrayList<>();
+            ListLabelsResponse listResponse =
+                    mService.users().labels().list(user).execute();
+            for (Label label : listResponse.getLabels()) {
+                labels.add(label.getName());
+            }
+            return labels;
+        }
+
+
+        @Override
+        protected void onPreExecute() {
+            Log.i(TAG, "");
+        }
+
+        @Override
+        protected void onPostExecute(List<String> output) {
+            if (output == null || output.size() == 0) {
+                Log.i(TAG, "No results returned.");
+            } else {
+                output.add(0, "Data retrieved using the Gmail API:");
+                Log.i(TAG, TextUtils.join("\n", output));
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            if (mLastError != null) {
+                Log.i(TAG, "The following error occurred:\n"
+                        + mLastError.getMessage());
+            } else {
+                Log.i(TAG, "Request cancelled.");
+            }
+        }
+    }
 
     private static class GetContactsTask extends AsyncTask<Account, Void, List<Person>> {
 

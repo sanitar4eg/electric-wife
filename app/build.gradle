@@ -29,4 +29,5 @@ dependencies {
     compile 'com.google.api-client:google-api-client:1.22.0'
     compile 'com.google.api-client:google-api-client-android:1.22.0'
     compile 'com.google.apis:google-api-services-people:v1-rev139-1.22.0'
+    compile 'com.google.apis:google-api-services-gmail:v1-rev83-1.22.0'
 }
