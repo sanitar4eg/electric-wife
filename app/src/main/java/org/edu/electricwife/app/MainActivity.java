@@ -28,8 +28,8 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.gmail.GmailScopes;
-import com.google.api.services.gmail.model.Label;
-import com.google.api.services.gmail.model.ListLabelsResponse;
+import com.google.api.services.gmail.model.ListMessagesResponse;
+import com.google.api.services.gmail.model.Message;
 import com.google.api.services.people.v1.PeopleService;
 import com.google.api.services.people.v1.model.ListConnectionsResponse;
 import com.google.api.services.people.v1.model.Person;
@@ -37,7 +37,6 @@ import com.google.api.services.people.v1.model.Person;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -167,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.i(TAG, msg.toString());
     }
 
-    private class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
+    private class MakeRequestTask extends AsyncTask<Void, Void, List<Message>> {
         private com.google.api.services.gmail.Gmail mService = null;
         private Exception mLastError = null;
 
@@ -186,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
          * @param params no parameters needed for this task.
          */
         @Override
-        protected List<String> doInBackground(Void... params) {
+        protected List<Message> doInBackground(Void... params) {
             try {
                 return getDataFromApi();
             } catch (Exception e) {
@@ -202,16 +201,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
          * @return List of Strings labels.
          * @throws IOException
          */
-        private List<String> getDataFromApi() throws IOException {
+        private List<Message> getDataFromApi() throws IOException {
             // Get the labels in the user's account.
             String user = "me";
-            List<String> labels = new ArrayList<>();
-            ListLabelsResponse listResponse =
-                    mService.users().labels().list(user).execute();
-            for (Label label : listResponse.getLabels()) {
-                labels.add(label.getName());
+            ListMessagesResponse list = mService.users()
+                    .messages().list(user).execute();
+            List<Message> prettyMessages = new ArrayList<>();
+            for (Message message : list.getMessages().subList(0, 5)) {
+                Message get = mService.users().messages().get(user, message.getId()).execute();
+                prettyMessages.add(get);
             }
-            return labels;
+            return prettyMessages;
         }
 
 
@@ -221,12 +221,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         @Override
-        protected void onPostExecute(List<String> output) {
+        protected void onPostExecute(List<Message> output) {
             if (output == null || output.size() == 0) {
                 Log.i(TAG, "No results returned.");
             } else {
-                output.add(0, "Data retrieved using the Gmail API:");
                 Log.i(TAG, TextUtils.join("\n", output));
+                List<Message> news = new ArrayList<>();
+                for (Message message : output) {
+                    if (message.getHistoryId() == null) {
+                        news.add(message);
+                    }
+                }
+                Log.i(TAG, "You have " + news.size() + "messages");
             }
         }
 
