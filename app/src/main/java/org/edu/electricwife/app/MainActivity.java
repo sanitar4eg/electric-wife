@@ -48,6 +48,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final HttpTransport HTTP_TRANSPORT = AndroidHttp.newCompatibleTransport();
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
+    private static String lastCheckId = null;
+
     /* Client for accessing Google APIs */
     private static GoogleApiClient mGoogleApiClient;
     GoogleAccountCredential mCredential;
@@ -227,9 +229,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } else {
                 Log.i(TAG, TextUtils.join("\n", output));
                 List<Message> news = new ArrayList<>();
+                if (lastCheckId == null) {
+                    lastCheckId = output.get(0).getId();
+                }
                 for (Message message : output) {
-                    if (message.getHistoryId() == null) {
+                    if (!message.getId().equals(lastCheckId)) {
                         news.add(message);
+                    } else {
+                        lastCheckId = output.get(0).getId();
+                        break;
                     }
                 }
                 Log.i(TAG, "You have " + news.size() + "messages");
