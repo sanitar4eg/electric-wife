@@ -28,6 +28,7 @@ import java.util.Random;
 
 
 public class SpeechToTextActivity extends Activity {
+    private final String TAG = "SpeechToTextActivity";
     private TextView txtSpeechInput;
     private TextToSpeech tts;
     private final int REQ_CODE_SPEECH_INPUT = 100;
@@ -193,7 +194,9 @@ public class SpeechToTextActivity extends Activity {
 
                     String userSpeech = result.get(0);
                     this.txtSpeechInput.setText(userSpeech);
-                    handleSpeech(userSpeech.toLowerCase(), true);
+                    if (userSpeech != null) {
+                        handleSpeech(userSpeech.toLowerCase(), true);
+                    }
                 }
                 break;
             }
