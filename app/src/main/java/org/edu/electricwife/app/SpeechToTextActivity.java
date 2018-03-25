@@ -111,13 +111,13 @@ public class SpeechToTextActivity extends Activity {
         public void onDone(String utteranceId) {
             // end of synthesizing
             if (utteranceId.equals("needAnswer")) {
-                handleSpeech(((String) txtSpeechInput.getText()).toLowerCase(), false);
+//                handleSpeech(((String) txtSpeechInput.getText()).toLowerCase(), false);
+                promptSpeechInput();
             }
         }
     };
 
     private void handleSpeech(String text, Boolean beforeAnswer) {
-
         if (containsAtLeastOne(text, new String[]{
                 "thanks", "thank you"
         })) {
@@ -147,7 +147,7 @@ public class SpeechToTextActivity extends Activity {
         }
 
         if (beforeAnswer) {
-            speak(text, true);
+//            speak(text, true);
         } else {
             promptSpeechInput();
         }
