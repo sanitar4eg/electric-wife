@@ -136,14 +136,13 @@ public class SpeechToTextActivity extends Activity {
         }
 
         if (containsAtLeastOne(text, new String[]{
-                "read one", "read one please"
+                "read one", "read the one", "read one please", "one", "1"
         })) {
             String snippet = MainActivity.messages.get(0).getSnippet();
             int i = snippet.indexOf("2018");
-            String data = snippet.substring(0, i);
-            Log.i(MainActivity.TAG, data);
+            String data = i != -1 ? snippet.substring(0, i) : snippet;
+            Log.i(TAG, data);
             speak(data, true);
-            return;
         }
 
         if (beforeAnswer) {
